@@ -29,7 +29,7 @@ struct C.wasm_exporttype_t {}
 struct C.wasm_exporttype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_export_type_t = 0
+	data &&C.wasm_exporttype_t = 0
 }
 
 struct C.wasm_externtype_t {}
@@ -72,7 +72,11 @@ pub mut:
 	data &&C.wasm_importtype_vec_t = 0
 }
 
-struct C.wasm_limits_t {}
+struct C.wasm_limits_t {
+pub mut:
+	min u32
+	max u32
+}
 
 struct C.wasm_memorytype_t {}
 
@@ -156,6 +160,12 @@ fn C.wasm_exporttype_vec_new_empty(out &C.wasm_exporttype_vec_t)
 fn C.wasm_exporttype_vec_new_uninitialized(out &C.wasm_exporttype_vec_t, size usize)
 fn C.wasm_exporttype_vec_copy(out &C.wasm_exporttype_vec_t, src &C.wasm_exporttype_vec_t)
 
+fn C.wasm_frame_vec_new(out &C.wasm_frame_vec_t, size usize, ptr &&C.wasm_frame_t)
+fn C.wasm_frame_vec_delete(out &C.wasm_frame_vec_t)
+fn C.wasm_frame_vec_new_empty(out &C.wasm_frame_vec_t)
+fn C.wasm_frame_vec_new_uninitialized(out &C.wasm_frame_vec_t, size usize)
+fn C.wasm_frame_vec_copy(out &C.wasm_frame_vec_t, src &C.wasm_frame_vec_t)
+
 fn C.wasm_externtype_vec_new(out &C.wasm_externtype_vec_t, size usize, ptr &&C.wasm_externtype_t)
 fn C.wasm_externtype_vec_delete(out &C.wasm_externtype_vec_t)
 fn C.wasm_externtype_vec_new_empty(out &C.wasm_externtype_vec_t)
@@ -203,7 +213,7 @@ fn C.wasm_valtype_kind(valtype &C.wasm_valtype_t) WasmValKind
 
 struct C.wasm_trap_t {}
 
-fn C.wasm_trap_new(store &C.wasm_store_t, message &C.wasm_byte_vec_t) C.wasm_trap
+fn C.wasm_trap_new(store &C.wasm_store_t, message &C.wasm_byte_vec_t) &C.wasm_trap_t
 fn C.wasm_trap_delete(trap &C.wasm_trap_t)
 fn C.wasm_trap_origin(trap &C.wasm_trap_t) &C.wasm_frame_t
 fn C.wasm_trap_message(trap &C.wasm_trap_t, out &C.wasm_byte_vec_t)
@@ -313,7 +323,7 @@ struct C.wasm_memory_t {}
 
 struct C.wasm_table_t {}
 
-pub type CWasmFuncCallback = fn (args &C.wasm_val_vec_t, mut results C.wasm_val_vec_t) &C.wasm_trap_t
+pub type CWasmFuncCallback = fn (args &C.wasm_val_vec_t, results C.wasm_val_vec_t) &C.wasm_trap_t
 
 pub type CWasmFuncCallbackWithEnv = fn (env voidptr, args &C.wasm_val_vec_t, mut results C.wasm_val_vec_t) &C.wasm_trap_t
 
@@ -329,7 +339,7 @@ fn C.wasm_func_call(func &C.wasm_func_t, args &C.wasm_val_vec_t, results &C.wasm
 fn C.wasm_func_copy(func &C.wasm_func) &C.wasm_func
 fn C.wasm_func_delete(func &C.wasm_func_t)
 fn C.wasm_func_new(store &C.wasm_store_t, ftype &C.wasm_functype_t, callback CWasmFuncCallback) &C.wasm_func_t
-fn C.wasm_func_new_with_env(store &C.wasm_store_t, ftype &C.wasm_functype_t, callback CWasmFuncCallback, env voidptr, env_finalizer fn (voidptr)) &C.wasm_func_t
+fn C.wasm_func_new_with_env(store &C.wasm_store_t, ftype &C.wasm_functype_t, callback CWasmFuncCallbackWithEnv, env voidptr, env_finalizer fn (voidptr)) &C.wasm_func_t
 fn C.wasm_func_param_arity(func &C.wasm_func_t) usize
 fn C.wasm_func_result_arity(func &C.wasm_func_t) usize
 fn C.wasm_func_type(func &C.wasm_func_t) &C.wasm_functype_t
@@ -339,7 +349,7 @@ fn C.wasm_global_delete(g &C.wasm_global_t)
 fn C.wasm_global_get(g &C.wasm_global_t, out &C.wasm_val_t)
 fn C.wasm_global_new(store &C.wasm_store_t, global_type &C.wasm_globaltype_t, val &C.wasm_val_t) &C.wasm_global_t
 fn C.wasm_global_set(g &C.wasm_global_t, val &C.wasm_val_t)
-fn C.wasm_global_same(x &C.wasm_global_t, y C.wasm_val_t) bool
+fn C.wasm_global_same(x &C.wasm_global_t, y &C.wasm_global_t) bool
 fn C.wasm_global_type(g &C.wasm_global_t) &C.wasm_globaltype_t
 
 fn C.wasm_memory_copy(m &C.wasm_memory_t) &C.wasm_memory_t
@@ -370,7 +380,55 @@ fn C.wasmer_last_error_message(buffer voidptr, length int) int
 
 fn C.wasm_functype_new(params &C.wasm_valtype_vec_t, results &C.wasm_valtype_vec_t) &C.wasm_functype_t
 fn C.wasm_functype_params(f &C.wasm_functype_t) &C.wasm_valtype_vec_t
-fn C.wasm_functype_result(f &C.wasm_functype_t) &C.wasm_valtype_vec_t
+fn C.wasm_functype_results(f &C.wasm_functype_t) &C.wasm_valtype_vec_t
 fn C.wasm_functype_copy(f &C.wasm_functype_t) &C.wasm_functype_t
 fn C.wasm_functype_delete(f &C.wasm_functype_t)
 fn C.wasm_functype_as_externtype(f &C.wasm_functype_t) &C.wasm_externtype_t
+
+fn C.wasm_externtype_kind(ext &C.wasm_externtype_t) u8
+fn C.wasm_externtype_delete(ext &C.wasm_externtype_t)
+fn C.wasm_externtype_copy(ext &C.wasm_externtype_t) &C.wasm_externtype_t
+fn C.wasm_externtype_as_functype(ext &C.wasm_externtype_t) &C.wasm_functype_t
+fn C.wasm_externtype_as_globaltype(ext &C.wasm_externtype_t) &C.wasm_globaltype_t
+fn C.wasm_externtype_as_memorytype(ext &C.wasm_externtype_t) &C.wasm_memorytype_t
+fn C.wasm_externtype_as_tabletype(ext &C.wasm_externtype_t) &C.wasm_tabletype_t
+
+fn C.wasm_extern_kind(ext &C.wasm_extern_t) u8
+fn C.wasm_extern_type(ext &C.wasm_extern_t) &C.wasm_externtype_t
+
+fn C.wasm_exporttype_copy(e &C.wasm_exporttype_t) &C.wasm_exporttype_t
+fn C.wasm_exporttype_delete(e &C.wasm_exporttype_t)
+fn C.wasm_exporttype_name(e &C.wasm_exporttype_t) &C.wasm_byte_vec_t
+fn C.wasm_exporttype_type(e &C.wasm_exporttype_t) &C.wasm_externtype_t
+fn C.wasm_exporttype_new(name &C.wasm_byte_vec_t, extern_type &C.wasm_externtype_t) &C.wasm_exporttype_t
+
+fn C.wasm_globaltype_as_externtype(g &C.wasm_globaltype_t) &C.wasm_externtype_t
+fn C.wasm_globaltype_content(g &C.wasm_globaltype_t) &C.wasm_valtype_t
+fn C.wasm_globaltype_delete(g &C.wasm_globaltype_t)
+fn C.wasm_globaltype_new(valtype &C.wasm_valtype_t, mutability u8) &C.wasm_globaltype_t
+fn C.wasm_globaltype_mutability(g &C.wasm_globaltype_t) u8
+
+fn C.wasm_importtype_copy(e &C.wasm_importtype_t) &C.wasm_exporttype_t
+fn C.wasm_importtype_delete(e &C.wasm_importtype_t)
+fn C.wasm_importtype_name(e &C.wasm_importtype_t) &C.wasm_byte_vec_t
+fn C.wasm_importtype_type(e &C.wasm_importtype_t) &C.wasm_externtype_t
+fn C.wasm_importtype_new(mod &C.wasm_byte_vec_t, name &C.wasm_byte_vec_t, extern_type &C.wasm_externtype_t) &C.wasm_exporttype_t
+fn C.wasm_importtype_module(e &C.wasm_importtype_t) &C.wasm_byte_vec_t
+
+fn C.wasm_memorytype_new(limits &C.wasm_limits_t) &C.wasm_memorytype_t
+fn C.wasm_memorytype_limits(m &C.wasm_memorytype_t) &C.wasm_limits_t
+fn C.wasm_memorytype_delete(m &C.wasm_memorytype_t)
+fn C.wasm_memorytype_as_externtype(m &C.wasm_memorytype_t) &C.wasm_externtype_t
+
+fn C.wasm_tabletype_limits(t &C.wasm_tabletype_t) &C.wasm_limits_t
+fn C.wasm_tabletype_new(valtype &C.wasm_valtype_t, limits &C.wasm_limits_t) &C.wasm_tabletype_t
+fn C.wasm_tabletype_element(t &C.wasm_tabletype_t) &C.wasm_valtype_t
+fn C.wasm_tabletype_delete(t &C.wasm_tabletype_t)
+fn C.wasm_tabletype_as_externtype(t &C.wasm_tabletype_t) &C.wasm_externtype_t
+
+fn C.wasm_frame_copy(f &C.wasm_frame_t) &C.wasm_frame_t
+fn C.wasm_frame_delete(f &C.wasm_frame_t)
+fn C.wasm_frame_func_index(f &C.wasm_frame_t) u32
+fn C.wasm_frame_func_offset(f &C.wasm_frame_t) usize
+fn C.wasm_frame_instance(f &C.wasm_frame_t) &C.wasm_instance_t
+fn C.wasm_frame_module_offset(f &C.wasm_frame_t) usize
