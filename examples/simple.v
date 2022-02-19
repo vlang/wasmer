@@ -3,6 +3,10 @@ import wasmer
 fn main() {
 	engine := wasmer.engine()
 	store := wasmer.store(engine)
+	defer {
+		store.delete()
+		engine.delete()
+	}
 
 	wasm := wasmer.wat2wasm('(module
         (func \$add (param \$lhs i32) (param \$rhs i32) (result i32)
@@ -10,12 +14,14 @@ fn main() {
             local.get \$rhs
             i32.add)
         (export "add" (func \$add))
-    
     )') ?
 
 	mod := wasmer.compile(store, wasm) ?
 	imports := wasmer.extern_vec_empty()
 	mut trap := wasmer.Trap{}
+	defer {
+		trap.delete()
+	}
 	instance := wasmer.instance(store, mod, imports, mut trap)
 
 	func := instance.exports().at(0).as_func() ?
@@ -26,8 +32,4 @@ fn main() {
 	} else {
 		println(results[0])
 	}
-
-	engine.delete()
-	trap.delete()
-	store.delete()
 }
