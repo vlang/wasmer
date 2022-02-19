@@ -10,8 +10,14 @@ fn main() {
 	mut config := wasmer.config()
 	config.set_compiler(.cranelift)
 	engine := wasmer.engine_with_config(config)
+	defer {
+		engine.delete()
+	}
 
 	store := wasmer.store(engine)
+	defer {
+		store.delete()
+	}
 
 	wasm := wasmer.wat2wasm('
         (module 
@@ -25,9 +31,14 @@ fn main() {
 	mod := wasmer.compile(store, wasm) ?
 
 	ty := wasmer.func_type([wasmer.val_type(.wasm_i32)], [wasmer.val_type(.wasm_i32)])
+	defer {
+		ty.delete()
+	}
 	func := wasmer.func(store, ty, callback)
-	ty.delete()
 	mut trap := wasmer.Trap{}
+	defer {
+		trap.delete()
+	}
 	instance := wasmer.instance(store, mod, [func.as_extern()], mut trap)
 
 	wasm_func := instance.exports().at(0).as_func() ?
@@ -38,8 +49,4 @@ fn main() {
 	} else {
 		println(results[0])
 	}
-
-	engine.delete()
-	trap.delete()
-	store.delete()
 }
