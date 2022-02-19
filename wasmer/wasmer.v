@@ -7,24 +7,24 @@ pub struct Engine {
 	inner &C.wasm_engine_t
 }
 
-pub struct ValVec {
+struct ValVec {
 mut:
 	inner C.wasm_val_vec_t
 }
 
-pub struct ByteVec {
+struct ByteVec {
 mut:
 	inner C.wasm_byte_vec_t
+}
+
+struct ExternVec {
+mut:
+	inner C.wasm_extern_vec_t
 }
 
 pub struct Val {
 pub mut:
 	inner C.wasm_val_t
-}
-
-pub struct ExternVec {
-mut:
-	inner C.wasm_extern_vec_t
 }
 
 pub struct Extern {
@@ -235,31 +235,31 @@ pub fn (v ValVec) str() string {
 	return builder.str()
 }
 
-pub fn byte_vec(x []byte) ByteVec {
+fn byte_vec(x []byte) ByteVec {
 	mut b := C.wasm_byte_vec_t{}
 	C.wasm_byte_vec_new(&b, usize(x.len), x.data)
 	return ByteVec{b}
 }
 
-pub fn (v ByteVec) at(i int) u8 {
+fn (v ByteVec) at(i int) u8 {
 	unsafe {
 		return v.inner.data[i]
 	}
 }
 
-pub fn (v ByteVec) set_at(i int, val u8) {
+fn (v ByteVec) set_at(i int, val u8) {
 	unsafe {
 		v.inner.data[i] = val
 	}
 }
 
-pub fn (v ByteVec) to_string() string {
+fn (v ByteVec) to_string() string {
 	unsafe {
 		return v.inner.data.vbytes(int(v.inner.size)).bytestr()
 	}
 }
 
-pub fn (v ByteVec) delete() {
+fn (v ByteVec) delete() {
 	C.wasm_byte_vec_delete(&v.inner)
 }
 
@@ -374,7 +374,6 @@ fn invoke_v_func(env_ voidptr, args &C.wasm_val_vec_t, results &C.wasm_val_vec_t
 			env_finalizer(env_)
 			bvec := byte_vec(err.msg.bytes())
 			trap := C.wasm_trap_new(store, &bvec.inner)
-			bvec.delete()
 			return trap
 		}
 		env_finalizer(env_)
@@ -517,6 +516,14 @@ pub fn (m Memory) typ() MemoryType {
 	return MemoryType{C.wasm_memory_type(m.inner)}
 }
 
+pub fn (e Extern) kind() u8 {
+	return C.wasm_extern_kind(e.inner)
+}
+
+pub fn (e Extern) typ() ExternType {
+	return ExternType{C.wasm_extern_type(e.inner)}
+}
+
 pub fn (e Extern) as_func() ?Func {
 	x := C.wasm_extern_as_func(e.inner)
 	if isnil(x) {
@@ -579,12 +586,22 @@ pub fn (v ExternVec) set_at(i int, val Extern) {
 
 // wat2wasm converts WAT to WASM bytecode. This function returns error
 // if source code is not valid WAT.
-pub fn wat2wasm(source string) ?ByteVec {
+pub fn wat2wasm(source string) ?[]byte {
 	mut out := ByteVec{}
 	src := byte_vec(source.bytes())
 	C.wat2wasm(&src.inner, &out.inner)
 	src.delete()
-	err := get_wasmer_error() or { return out }
+	err := get_wasmer_error() or {
+		mut bytes := []byte{}
+		for i in 0 .. out.inner.size {
+			unsafe {
+				bytes << out.inner.data[i]
+			}
+		}
+
+		out.delete()
+		return bytes
+	}
 	out.delete()
 	return error(err)
 }
@@ -595,7 +612,7 @@ pub fn engine() Engine {
 }
 
 // engine_with_config will construct Wasmer engine with config from `c`.
-// Note: Config will be deallocated aftetr this call automatically
+// Note: Config will be deallocated after this call automatically
 pub fn engine_with_config(c Config) Engine {
 	e := Engine{C.wasm_engine_new_with_config(c.inner)}
 	return e
@@ -647,8 +664,10 @@ pub fn get_wasmer_error() ?string {
 	return buf.bytestr()
 }
 
-pub fn compile(store Store, wasm ByteVec) ?Module {
-	mod := C.wasm_module_new(store.inner, &wasm.inner)
+pub fn compile(store Store, wasm []byte) ?Module {
+	wasm_ := byte_vec(wasm)
+	mod := C.wasm_module_new(store.inner, &wasm_.inner)
+
 	err := get_wasmer_error() or { return Module{mod} }
 
 	return error(err)
@@ -683,7 +702,6 @@ pub fn (t Trap) message() ?string {
 
 	mut bytes := ByteVec{}
 	C.wasm_trap_message(t.inner, &bytes.inner)
-
 	return bytes.to_string()
 }
 
@@ -699,10 +717,19 @@ pub fn instance(store Store, mod Module, imports []Extern, mut trap Trap) Instan
 	return instance
 }
 
-pub fn (instance Instance) exports() ExternVec {
+pub fn (instance Instance) exports() []Extern {
 	mut x := extern_vec_empty()
+	mut exports := []Extern{}
 	C.wasm_instance_exports(instance.inner, &x.inner)
-	return x
+
+	for i in 0 .. x.inner.size {
+		unsafe {
+			exports << Extern{x.inner.data[i]}
+			println(exports[int(i)])
+		}
+	}
+
+	return exports
 }
 
 pub fn (ty FuncType) params() []ValType {
@@ -950,4 +977,8 @@ pub fn (mut f Features) threads(enable bool) bool {
 
 pub fn (mut f Features) reference_types(enable bool) bool {
 	return C.wasmer_features_reference_types(f.inner, enable)
+}
+
+pub fn (e Extern) str() string {
+	return 'Extern{}'
 }
