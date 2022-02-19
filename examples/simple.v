@@ -17,14 +17,14 @@ fn main() {
     )') ?
 
 	mod := wasmer.compile(store, wasm) ?
-	imports := wasmer.extern_vec_empty()
+	imports := []wasmer.Extern{}
 	mut trap := wasmer.Trap{}
 	defer {
 		trap.delete()
 	}
 	instance := wasmer.instance(store, mod, imports, mut trap)
 
-	func := instance.exports().at(0).as_func() ?
+	func := instance.exports()[0].as_func() ?
 	mut results := [wasmer.val_i32(0)]
 	trap = func.call([wasmer.val_i32(2), wasmer.val_i32(3)], mut results)
 	if trap.is_set() {

@@ -40,8 +40,8 @@ fn main() {
 		trap.delete()
 	}
 	instance := wasmer.instance(store, mod, [func.as_extern()], mut trap)
-
-	wasm_func := instance.exports().at(0).as_func() ?
+	exports := instance.exports()
+	wasm_func := exports[0].as_func() ?
 	mut results := [wasmer.val_i32(0)]
 	trap = wasm_func.call([wasmer.val_i32(44)], mut results)
 	if trap.is_set() {
