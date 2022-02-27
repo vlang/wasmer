@@ -996,9 +996,10 @@ pub fn (p WasmPtr<T>) deref(memory &Memory) ?&T {
 	if end > memory.size() || sizeof(T) == 0 {
 		return none
 	}
-
-	ptr := memory.data() + p.offset
-	return &T(ptr)
+	unsafe {
+		ptr := &byte(memory.data()) + p.offset
+		return &T(ptr)
+	}
 }
 
 pub fn (p WasmPtr<T>) get_offset() u32 {
