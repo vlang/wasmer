@@ -982,3 +982,25 @@ pub fn (mut f Features) reference_types(enable bool) bool {
 pub fn (e Extern) str() string {
 	return 'Extern{}'
 }
+
+pub struct WasmPtr<T> {
+	offset u32
+}
+
+pub fn wasm_ptr<T>(offset u32) WasmPtr<T> {
+	return WasmPtr<T>{offset}
+}
+
+pub fn (p WasmPtr<T>) deref(memory &Memory) ?&T {
+	end := p.offset + sizeof(T)
+	if end > memory.size() || sizeof(T) == 0 {
+		return none
+	}
+
+	ptr := memory.data() + p.offset
+	return &T(ptr)
+}
+
+pub fn (p WasmPtr<T>) get_offset() u32 {
+	return p.offset
+}
