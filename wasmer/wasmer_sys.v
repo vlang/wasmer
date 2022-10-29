@@ -3,9 +3,9 @@ module wasmer
 #flag -L $env('WASMER_DIR')/lib
 #flag -lwasmer
 #flag -I @VMODROOT
+#flag -I $env('WASMER_DIR')/include
 #flag -rpath $env('WASMER_DIR')/lib
 #include "wasmer/include/wasm.h"
-#include "wasmer/include/wasmer_wasm.h"
 #include "wasmer/include/wasmer.h"
 
 struct C.wasm_engine_t {}
