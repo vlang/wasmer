@@ -89,7 +89,7 @@ pub struct Instance {
 
 // A trap represents an error which stores trace message with backtrace
 pub struct Trap {
-	inner &C.wasm_trap_t = 0
+	inner &C.wasm_trap_t = unsafe { 0 }
 }
 
 // A configuration holds the compiler and the engine used by the store.
@@ -372,7 +372,7 @@ fn invoke_v_func(env_ voidptr, args &C.wasm_val_vec_t, results &C.wasm_val_vec_t
 		mut arguments := Arguments{args, env.additional_env, results}
 		callback(mut arguments) or {
 			env_finalizer(env_)
-			bvec := byte_vec(err.msg.bytes())
+			bvec := byte_vec(err.msg().bytes())
 			trap := C.wasm_trap_new(store, &bvec.inner)
 			return trap
 		}
@@ -725,7 +725,6 @@ pub fn (instance Instance) exports() []Extern {
 	for i in 0 .. x.inner.size {
 		unsafe {
 			exports << Extern{x.inner.data[i]}
-			println(exports[int(i)])
 		}
 	}
 
@@ -993,11 +992,11 @@ pub fn wasm_ptr<T>(offset u32) WasmPtr<T> {
 
 pub fn (p WasmPtr<T>) deref(memory &Memory) ?&T {
 	end := p.offset + sizeof(T)
-	if end > memory.size() || sizeof(T) == 0 {
+	if end > memory.data_size() || sizeof(T) == 0 {
 		return none
 	}
 	unsafe {
-		ptr := &byte(memory.data()) + p.offset
+		ptr := usize(memory.data()) + p.offset
 		return &T(ptr)
 	}
 }

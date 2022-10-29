@@ -21,7 +21,7 @@ struct C.wasm_store_t {}
 struct C.wasm_byte_vec_t {
 pub mut:
 	size usize
-	data &u8 = 0
+	data &u8 = unsafe { 0 }
 }
 
 struct C.wasm_exporttype_t {}
@@ -29,7 +29,7 @@ struct C.wasm_exporttype_t {}
 struct C.wasm_exporttype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_exporttype_t = 0
+	data &&C.wasm_exporttype_t = unsafe { 0 }
 }
 
 struct C.wasm_externtype_t {}
@@ -37,7 +37,7 @@ struct C.wasm_externtype_t {}
 struct C.wasm_externtype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_externtype_t = 0
+	data &&C.wasm_externtype_t = unsafe { 0 }
 }
 
 struct C.wasm_frame_t {}
@@ -45,7 +45,7 @@ struct C.wasm_frame_t {}
 struct C.wasm_frame_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_frame_t = 0
+	data &&C.wasm_frame_t = unsafe { 0 }
 }
 
 struct C.wasm_functype_t {}
@@ -53,7 +53,7 @@ struct C.wasm_functype_t {}
 struct C.wasm_functype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_functype_t = 0
+	data &&C.wasm_functype_t = unsafe { 0 }
 }
 
 struct C.wasm_globaltype_t {}
@@ -61,7 +61,7 @@ struct C.wasm_globaltype_t {}
 struct C.wasm_globaltype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_globaltype_vec_t = 0
+	data &&C.wasm_globaltype_vec_t = unsafe { 0 }
 }
 
 struct C.wasm_importtype_t {}
@@ -69,7 +69,7 @@ struct C.wasm_importtype_t {}
 struct C.wasm_importtype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_importtype_vec_t = 0
+	data &&C.wasm_importtype_vec_t = unsafe { 0 }
 }
 
 struct C.wasm_limits_t {
@@ -83,7 +83,7 @@ struct C.wasm_memorytype_t {}
 struct C.wasm_memorytype_t_vec {
 pub mut:
 	size usize
-	data &&C.wasm_memorytype_t = 0
+	data &&C.wasm_memorytype_t = unsafe { 0 }
 }
 
 struct C.wasm_ref_t {}
@@ -93,7 +93,7 @@ struct C.wasm_tabletype_t {}
 struct C.wasm_tabletype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_tabletype_t = 0
+	data &&C.wasm_tabletype_t = unsafe { 0 }
 }
 
 pub struct C.wasm_valtype_t {}
@@ -101,7 +101,7 @@ pub struct C.wasm_valtype_t {}
 struct C.wasm_valtype_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_valtype_t = 0
+	data &&C.wasm_valtype_t = unsafe { 0 }
 }
 
 pub enum WasmerCompiler {
@@ -228,7 +228,7 @@ pub mut:
 pub struct C.wasm_val_vec_t {
 pub mut:
 	size usize
-	data &C.wasm_val_t = 0
+	data &C.wasm_val_t = unsafe { 0 }
 }
 
 pub union C.wasm_val_inner {
@@ -237,7 +237,7 @@ pub mut:
 	i64 i64
 	f64 f64
 	f32 f32
-	ref &C.wasm_ref_t = 0
+	ref &C.wasm_ref_t = unsafe { 0 }
 }
 
 pub fn wasm_i32_val(x int) C.wasm_val_t {
@@ -306,7 +306,7 @@ struct C.wasm_extern_t {}
 struct C.wasm_extern_vec_t {
 pub mut:
 	size usize
-	data &&C.wasm_extern_t = 0
+	data &&C.wasm_extern_t = unsafe { 0 }
 }
 
 fn C.wasm_extern_vec_new(out &C.wasm_extern_vec_t, size usize, ptr &C.wasm_extern_t)
