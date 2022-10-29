@@ -14,9 +14,9 @@ fn main() {
             local.get \$rhs
             i32.add)
         (export "add" (func \$add))
-    )') ?
+    )')?
 
-	mod := wasmer.compile(store, wasm) ?
+	mod := wasmer.compile(store, wasm)?
 	imports := []wasmer.Extern{}
 	mut trap := wasmer.Trap{}
 	defer {
@@ -24,11 +24,11 @@ fn main() {
 	}
 	instance := wasmer.instance(store, mod, imports, mut trap)
 
-	func := instance.exports()[0].as_func() ?
+	func := instance.exports()[0].as_func()?
 	mut results := [wasmer.val_i32(0)]
 	trap = func.call([wasmer.val_i32(2), wasmer.val_i32(3)], mut results)
 	if trap.is_set() {
-		println(trap.message() ?)
+		println(trap.message()?)
 	} else {
 		println(results[0])
 	}

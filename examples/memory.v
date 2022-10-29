@@ -42,7 +42,7 @@ fn main() {
 
 	get_at := exports[0].as_func()?
 	set_at := exports[1].as_func()?
-	memory := exports[3].as_memory()?	
+	memory := exports[3].as_memory()?
 
 	mem_addr := int(0x2220)
 	ptr := wasmer.wasm_ptr<int>(u32(mem_addr))

@@ -129,7 +129,7 @@ pub fn val_ref(v voidptr) Val {
 }
 
 pub fn val_null() Val {
-	return val_ref(voidptr(0))
+	return val_ref(unsafe { nil })
 }
 
 pub fn (val Val) kind() WasmValKind {
@@ -318,7 +318,7 @@ pub fn func_raw(store Store, ftype FuncType, callback CWasmFuncCallback) Func {
 }
 
 pub fn func_raw_with_env(store Store, ftype FuncType, callback CWasmFuncCallbackWithEnv, env voidptr, env_finalizer fn (voidptr)) Func {
-	return Func{C.wasm_func_new_with_env(store.inner, ftype.inner, callback, env, voidptr(0))}
+	return Func{C.wasm_func_new_with_env(store.inner, ftype.inner, callback, env, unsafe { nil })}
 }
 
 pub struct Arguments {
@@ -397,7 +397,7 @@ pub fn func(store Store, ftype FuncType, callback WasmCallback) Func {
 		mut env := &WasmVEnv(C.malloc(sizeof(WasmVEnv)))
 		env.callback = callback
 		env.store = store.inner
-		env.additional_env = voidptr(0)
+		env.additional_env = nil
 		return func_raw_with_env(store, ftype, invoke_v_func, voidptr(env), env_finalizer)
 	}
 }

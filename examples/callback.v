@@ -2,7 +2,7 @@ import wasmer
 
 fn callback(mut args wasmer.Arguments) ? {
 	println('Hello from WASM! Argument 0: ${args.arg(0)}')
-	args.set_result(0, wasmer.val_i32(42)) ?
+	args.set_result(0, wasmer.val_i32(42))?
 	return
 }
 
@@ -26,9 +26,9 @@ fn main() {
 				(call \$host_function (local.get \$arg)))
 
 			(export "f" (func \$f))
-		)') ?
+		)')?
 
-	mod := wasmer.compile(store, wasm) ?
+	mod := wasmer.compile(store, wasm)?
 
 	ty := wasmer.func_type([wasmer.val_type(.wasm_i32)], [wasmer.val_type(.wasm_i32)])
 	defer {
@@ -41,11 +41,11 @@ fn main() {
 	}
 	instance := wasmer.instance(store, mod, [func.as_extern()], mut trap)
 	exports := instance.exports()
-	wasm_func := exports[0].as_func() ?
+	wasm_func := exports[0].as_func()?
 	mut results := [wasmer.val_i32(0)]
 	trap = wasm_func.call([wasmer.val_i32(44)], mut results)
 	if trap.is_set() {
-		panic(trap.message() ?)
+		panic(trap.message()?)
 	} else {
 		println(results[0])
 	}

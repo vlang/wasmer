@@ -1,4 +1,4 @@
-import wasmer 
+import wasmer
 
 fn test_add() {
 	engine := wasmer.engine()
@@ -14,9 +14,9 @@ fn test_add() {
             local.get \$rhs
             i32.add)
         (export "add" (func \$add))
-    )') ?
+    )')?
 
-	mod := wasmer.compile(store, wasm) ?
+	mod := wasmer.compile(store, wasm)?
 	imports := []wasmer.Extern{}
 	mut trap := wasmer.Trap{}
 	defer {
@@ -24,7 +24,7 @@ fn test_add() {
 	}
 	instance := wasmer.instance(store, mod, imports, mut trap)
 
-	func := instance.exports()[0].as_func() ?
+	func := instance.exports()[0].as_func()?
 	mut results := [wasmer.val_i32(0)]
 	trap = func.call([wasmer.val_i32(2), wasmer.val_i32(3)], mut results)
 
@@ -32,10 +32,9 @@ fn test_add() {
 	assert results[0].i32() == 5
 }
 
-
 fn callback(mut args wasmer.Arguments) ? {
 	println('Hello from WASM! Argument 0: ${args.arg(0)}')
-	args.set_result(0, wasmer.val_i32(42)) ?
+	args.set_result(0, wasmer.val_i32(42))?
 	return
 }
 
@@ -59,9 +58,9 @@ fn test_callback() {
 				(call \$host_function (local.get \$arg)))
 
 			(export "f" (func \$f))
-		)') ?
+		)')?
 
-	mod := wasmer.compile(store, wasm) ?
+	mod := wasmer.compile(store, wasm)?
 
 	ty := wasmer.func_type([wasmer.val_type(.wasm_i32)], [wasmer.val_type(.wasm_i32)])
 	defer {
@@ -74,13 +73,12 @@ fn test_callback() {
 	}
 	instance := wasmer.instance(store, mod, [func.as_extern()], mut trap)
 	exports := instance.exports()
-	wasm_func := exports[0].as_func() ?
+	wasm_func := exports[0].as_func()?
 	mut results := [wasmer.val_i32(0)]
 	trap = wasm_func.call([wasmer.val_i32(44)], mut results)
 	assert !trap.is_set()
 	assert results[0].i32() == 42
 }
-
 
 fn test_memory() {
 	mut config := wasmer.config()
@@ -125,7 +123,7 @@ fn test_memory() {
 	get_at := exports[0].as_func()?
 	set_at := exports[1].as_func()?
 	mem_size := exports[2].as_func()?
-	memory := exports[3].as_memory()?	
+	memory := exports[3].as_memory()?
 
 	mem_addr := int(0x2220)
 	ptr := wasmer.wasm_ptr<int>(u32(mem_addr))
