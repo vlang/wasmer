@@ -24,4 +24,4 @@ jobs:
       - name: Ensure everything is formatted
         run: cd wasmer && v fmt -verify .
       - name: Run tests
-        run: echo $WASMER_DIR && cd wasmer && v test .
+        run: echo $WASMER_DIR && cd wasmer && WASMER_DIR=$HOME/.wasmer v test .
