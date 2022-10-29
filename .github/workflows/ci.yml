@@ -15,13 +15,11 @@ jobs:
         run: cd v && make && sudo ./v symlink && cd -
       - name: Install Wasmer
         run: curl https://get.wasmer.io -sSfL | sh
-      - name: Checkout Coreutils (for tests)
-        uses: actions/checkout@v2
-        with:
-          path: wasmer
+      - name: Install Clang
+        run: sudo apt install clang
       - name: V doctor
         run: v doctor
       - name: Ensure everything is formatted
         run: cd wasmer && v fmt -verify .
       - name: Run tests
-        run: echo $WASMER_DIR && cd wasmer && WASMER_DIR=$HOME/.wasmer v test .
+        run: echo $WASMER_DIR && cd wasmer && WASMER_DIR=$HOME/.wasmer v -cc clang test .
