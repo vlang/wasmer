@@ -1,0 +1,26 @@
+
+
+on: [push, pull_request]
+
+jobs:
+  ubuntu-fast-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Latest V
+        uses: actions/checkout@v2
+        with:
+          repository: vlang/v
+          path: v
+      - name: Build V
+        run: cd v && make && sudo ./v symlink && cd -
+      - name: Checkout Coreutils (for tests)
+        uses: actions/checkout@v2
+        with:
+          path: wasmer
+
+      - name: V doctor
+        run: v doctor
+      - name: Ensure everything is formatted
+        run: cd wasmer && v fmt -verify .
+      - name: Run tests
+        run: cd wasmer && v test .
