@@ -62,7 +62,7 @@
 #  define DEPRECATED(message) __declspec(deprecated(message))
 #endif
 
-// The `universal` feature has been enabled for this build.
+// The `compiler` feature has been enabled for this build.
 #define WASMER_UNIVERSAL_ENABLED
 
 // The `compiler` feature has been enabled for this build.
@@ -75,11 +75,11 @@
 #define WASMER_MIDDLEWARES_ENABLED
 
 // This file corresponds to the following Wasmer version.
-#define WASMER_VERSION "2.2.0-rc1"
-#define WASMER_VERSION_MAJOR 2
-#define WASMER_VERSION_MINOR 2
+#define WASMER_VERSION "3.0.0-rc.1"
+#define WASMER_VERSION_MAJOR 3
+#define WASMER_VERSION_MINOR 0
 #define WASMER_VERSION_PATCH 0
-#define WASMER_VERSION_PRE "rc1"
+#define WASMER_VERSION_PRE "rc.1"
 
 #endif // WASMER_H_PRELUDE
 
@@ -112,22 +112,36 @@ typedef enum wasi_version_t {
 #if defined(WASMER_WASI_ENABLED)
   SNAPSHOT1 = 2,
 #endif
+#if defined(WASMER_WASI_ENABLED)
+  WASIX32V1 = 3,
+#endif
+#if defined(WASMER_WASI_ENABLED)
+  WASIX64V1 = 4,
+#endif
 } wasi_version_t;
 #endif
 
-#if defined(WASMER_COMPILER_ENABLED)
+#if (defined(WASMER_COMPILER_ENABLED) && defined(WASMER_COMPILER_ENABLED))
 typedef enum wasmer_compiler_t {
+#if defined(WASMER_COMPILER_ENABLED)
   CRANELIFT = 0,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
   LLVM = 1,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
   SINGLEPASS = 2,
+#endif
 } wasmer_compiler_t;
 #endif
 
+#if defined(WASMER_COMPILER_ENABLED)
 typedef enum wasmer_engine_t {
+#if defined(WASMER_COMPILER_ENABLED)
   UNIVERSAL = 0,
-  DYLIB = 1,
-  STATICLIB = 2,
+#endif
 } wasmer_engine_t;
+#endif
 
 #if defined(WASMER_COMPILER_ENABLED)
 typedef enum wasmer_parser_operator_t {
@@ -1670,8 +1684,61 @@ typedef enum wasmer_parser_operator_t {
 #if defined(WASMER_COMPILER_ENABLED)
   I32x4TruncSatF64x2UZero,
 #endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I8x16RelaxedSwizzle,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I32x4RelaxedTruncSatF32x4S,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I32x4RelaxedTruncSatF32x4U,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I32x4RelaxedTruncSatF64x2SZero,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I32x4RelaxedTruncSatF64x2UZero,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F32x4Fma,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F32x4Fms,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F64x2Fma,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F64x2Fms,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I8x16LaneSelect,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I16x8LaneSelect,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I32x4LaneSelect,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  I64x2LaneSelect,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F32x4RelaxedMin,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F32x4RelaxedMax,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F64x2RelaxedMin,
+#endif
+#if defined(WASMER_COMPILER_ENABLED)
+  F64x2RelaxedMax,
+#endif
 } wasmer_parser_operator_t;
 #endif
+
+typedef struct Arc_Mutex_WasiPipeDataWithDestructor Arc_Mutex_WasiPipeDataWithDestructor;
 
 #if defined(WASMER_WASI_ENABLED)
 typedef struct wasi_config_t wasi_config_t;
@@ -1698,11 +1765,44 @@ typedef struct wasmer_target_t wasmer_target_t;
 typedef struct wasmer_triple_t wasmer_triple_t;
 
 #if defined(WASMER_WASI_ENABLED)
+typedef int64_t (*WasiConsoleIoReadCallback)(const void*, char*, uintptr_t);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+typedef int64_t (*WasiConsoleIoWriteCallback)(const void*, const char*, uintptr_t, bool);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+typedef int64_t (*WasiConsoleIoSeekCallback)(const void*, char, int64_t);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+typedef struct wasi_pipe_t {
+  WasiConsoleIoReadCallback read;
+  WasiConsoleIoWriteCallback write;
+  WasiConsoleIoSeekCallback seek;
+  struct Arc_Mutex_WasiPipeDataWithDestructor *data;
+} wasi_pipe_t;
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
 typedef struct wasmer_named_extern_vec_t {
   uintptr_t size;
   struct wasmer_named_extern_t **data;
 } wasmer_named_extern_vec_t;
 #endif
+
+#if defined(WASMER_WASI_ENABLED)
+typedef int64_t (*WasiConsoleIoEnvDestructor)(const void*);
+#endif
+
+typedef struct FunctionCEnv {
+  void *inner;
+} FunctionCEnv;
+
+typedef struct wasmer_funcenv_t {
+  struct FunctionCEnv inner;
+} wasmer_funcenv_t;
 
 typedef uint64_t (*wasmer_metering_cost_function_t)(enum wasmer_parser_operator_t wasm_operator);
 
@@ -1711,35 +1811,39 @@ extern "C" {
 #endif // __cplusplus
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_arg(struct wasi_config_t *config, const char *arg);
+void wasi_config_arg(struct wasi_config_t *wasi_config, const char *arg);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_capture_stderr(struct wasi_config_t *config);
+void wasi_config_capture_stderr(struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_capture_stdout(struct wasi_config_t *config);
+void wasi_config_capture_stdin(struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_env(struct wasi_config_t *config, const char *key, const char *value);
+void wasi_config_capture_stdout(struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_inherit_stderr(struct wasi_config_t *config);
+void wasi_config_env(struct wasi_config_t *wasi_config, const char *key, const char *value);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_inherit_stdin(struct wasi_config_t *config);
+void wasi_config_inherit_stderr(struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-void wasi_config_inherit_stdout(struct wasi_config_t *config);
+void wasi_config_inherit_stdin(struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-bool wasi_config_mapdir(struct wasi_config_t *config, const char *alias, const char *dir);
+void wasi_config_inherit_stdout(struct wasi_config_t *wasi_config);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+bool wasi_config_mapdir(struct wasi_config_t *wasi_config, const char *alias, const char *dir);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
@@ -1747,7 +1851,22 @@ struct wasi_config_t *wasi_config_new(const char *program_name);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-bool wasi_config_preopen_dir(struct wasi_config_t *config, const char *dir);
+void wasi_config_overwrite_stderr(struct wasi_config_t *config_overwrite,
+                                  struct wasi_pipe_t *stderr_overwrite);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+void wasi_config_overwrite_stdin(struct wasi_config_t *config_overwrite,
+                                 struct wasi_pipe_t *stdin_overwrite);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+void wasi_config_overwrite_stdout(struct wasi_config_t *config_overwrite,
+                                  struct wasi_pipe_t *stdout_overwrite);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+bool wasi_config_preopen_dir(struct wasi_config_t *wasi_config, const char *dir);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
@@ -1755,7 +1874,13 @@ void wasi_env_delete(struct wasi_env_t *_state);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-struct wasi_env_t *wasi_env_new(struct wasi_config_t *config);
+bool wasi_env_initialize_instance(struct wasi_env_t *wasi_env,
+                                  wasm_store_t *store,
+                                  wasm_instance_t *instance);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+struct wasi_env_t *wasi_env_new(wasm_store_t *store, struct wasi_config_t *wasi_config);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
@@ -1767,9 +1892,13 @@ intptr_t wasi_env_read_stdout(struct wasi_env_t *env, char *buffer, uintptr_t bu
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-bool wasi_get_imports(const wasm_store_t *store,
+void wasi_env_set_memory(struct wasi_env_t *env, const wasm_memory_t *memory);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+bool wasi_get_imports(const wasm_store_t *_store,
+                      struct wasi_env_t *wasi_env,
                       const wasm_module_t *module,
-                      const struct wasi_env_t *wasi_env,
                       wasm_extern_vec_t *imports);
 #endif
 
@@ -1778,9 +1907,8 @@ wasm_func_t *wasi_get_start_function(wasm_instance_t *instance);
 #endif
 
 #if defined(WASMER_WASI_ENABLED)
-bool wasi_get_unordered_imports(const wasm_store_t *store,
+bool wasi_get_unordered_imports(struct wasi_env_t *wasi_env,
                                 const wasm_module_t *module,
-                                const struct wasi_env_t *wasi_env,
                                 struct wasmer_named_extern_vec_t *imports);
 #endif
 
@@ -1788,15 +1916,70 @@ bool wasi_get_unordered_imports(const wasm_store_t *store,
 enum wasi_version_t wasi_get_wasi_version(const wasm_module_t *module);
 #endif
 
+#if defined(WASMER_WASI_ENABLED)
+bool wasi_pipe_delete(struct wasi_pipe_t *ptr);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+void wasi_pipe_delete_str(char *buf);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_flush(struct wasi_pipe_t *ptr);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+struct wasi_pipe_t *wasi_pipe_new(struct wasi_pipe_t **ptr_user);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+struct wasi_pipe_t *wasi_pipe_new_blocking(struct wasi_pipe_t **ptr_user);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+struct wasi_pipe_t *wasi_pipe_new_internal(WasiConsoleIoReadCallback read,
+                                           WasiConsoleIoWriteCallback write,
+                                           WasiConsoleIoSeekCallback seek,
+                                           WasiConsoleIoEnvDestructor destructor,
+                                           const void *env_data,
+                                           uintptr_t env_data_len);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+struct wasi_pipe_t *wasi_pipe_new_null(void);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_read_bytes(const struct wasi_pipe_t *ptr, const char *buf, uintptr_t read);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_read_str(const struct wasi_pipe_t *ptr, char **buf);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_seek(struct wasi_pipe_t *ptr, char seek_dir, int64_t seek);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_write_bytes(struct wasi_pipe_t *ptr, const char *buf, uintptr_t len);
+#endif
+
+#if defined(WASMER_WASI_ENABLED)
+int64_t wasi_pipe_write_str(const struct wasi_pipe_t *ptr, const char *buf);
+#endif
+
 void wasm_config_canonicalize_nans(wasm_config_t *config, bool enable);
 
 void wasm_config_push_middleware(wasm_config_t *config, struct wasmer_middleware_t *middleware);
 
-#if defined(WASMER_COMPILER_ENABLED)
+#if (defined(WASMER_COMPILER_ENABLED) && defined(WASMER_COMPILER_ENABLED))
 void wasm_config_set_compiler(wasm_config_t *config, enum wasmer_compiler_t compiler);
 #endif
 
+#if defined(WASMER_COMPILER_ENABLED)
 void wasm_config_set_engine(wasm_config_t *config, enum wasmer_engine_t engine);
+#endif
 
 void wasm_config_set_features(wasm_config_t *config, struct wasmer_features_t *features);
 
@@ -1831,6 +2014,10 @@ bool wasmer_features_tail_call(struct wasmer_features_t *features, bool enable);
 
 bool wasmer_features_threads(struct wasmer_features_t *features, bool enable);
 
+void wasmer_funcenv_delete(struct wasmer_funcenv_t *_funcenv);
+
+struct wasmer_funcenv_t *wasmer_funcenv_new(wasm_store_t *store, void *data);
+
 #if defined(WASMER_COMPILER_ENABLED)
 bool wasmer_is_compiler_available(enum wasmer_compiler_t compiler);
 #endif
@@ -1847,14 +2034,14 @@ struct wasmer_middleware_t *wasmer_metering_as_middleware(struct wasmer_metering
 
 void wasmer_metering_delete(struct wasmer_metering_t *_metering);
 
-uint64_t wasmer_metering_get_remaining_points(const wasm_instance_t *instance);
+uint64_t wasmer_metering_get_remaining_points(wasm_instance_t *instance);
 
 struct wasmer_metering_t *wasmer_metering_new(uint64_t initial_limit,
                                               wasmer_metering_cost_function_t cost_function);
 
-bool wasmer_metering_points_are_exhausted(const wasm_instance_t *instance);
+bool wasmer_metering_points_are_exhausted(wasm_instance_t *instance);
 
-void wasmer_metering_set_remaining_points(const wasm_instance_t *instance, uint64_t new_limit);
+void wasmer_metering_set_remaining_points(wasm_instance_t *instance, uint64_t new_limit);
 
 void wasmer_module_name(const wasm_module_t *module, wasm_name_t *out);
 

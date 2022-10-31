@@ -516,7 +516,14 @@ pub fn (m Memory) typ() MemoryType {
 	return MemoryType{C.wasm_memory_type(m.inner)}
 }
 
-pub fn (e Extern) kind() u8 {
+pub enum ExternKind {
+	func
+	global
+	table
+	memory
+}
+
+pub fn (e Extern) kind() ExternKind {
 	return C.wasm_extern_kind(e.inner)
 }
 

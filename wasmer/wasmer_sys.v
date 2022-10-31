@@ -393,7 +393,7 @@ fn C.wasm_externtype_as_globaltype(ext &C.wasm_externtype_t) &C.wasm_globaltype_
 fn C.wasm_externtype_as_memorytype(ext &C.wasm_externtype_t) &C.wasm_memorytype_t
 fn C.wasm_externtype_as_tabletype(ext &C.wasm_externtype_t) &C.wasm_tabletype_t
 
-fn C.wasm_extern_kind(ext &C.wasm_extern_t) u8
+fn C.wasm_extern_kind(ext &C.wasm_extern_t) ExternKind
 fn C.wasm_extern_type(ext &C.wasm_extern_t) &C.wasm_externtype_t
 
 fn C.wasm_exporttype_copy(e &C.wasm_exporttype_t) &C.wasm_exporttype_t
