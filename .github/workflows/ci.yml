@@ -14,7 +14,7 @@ jobs:
       - name: Build V
         run: cd v && make && sudo ./v symlink && cd -
       - name: Install Wasmer
-        run: curl https://get.wasmer.io -sSfL | sh
+        run: curl https://get.wasmer.io -sSfL | sh -s "v3.0.0-rc.1"
       - name: Install Clang
         run: sudo apt install clang
       - name: Checkout wasmer
